@@ -2526,6 +2526,8 @@ pub mod cmds {
                     SubCmd::parse(matches).map(Self::ValidateGenesisTemplates);
                 let genesis_tx =
                     SubCmd::parse(matches).map(Self::SignGenesisTxs);
+                let byte_genesis_tx =
+                    SubCmd::parse(matches).map(Self::ByteGenesisTxs);
                 let parse_migrations_json =
                     SubCmd::parse(matches).map(Self::ParseMigrationJson);
                 join_network
@@ -2540,6 +2542,7 @@ pub mod cmds {
                     .or(epoch_sleep)
                     .or(validate_genesis_templates)
                     .or(genesis_tx)
+                    .or(byte_genesis_tx)
                     .or(parse_migrations_json)
                     .or(sign_offline)
             })
