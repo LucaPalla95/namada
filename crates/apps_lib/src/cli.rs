@@ -2492,7 +2492,7 @@ pub mod cmds {
         EpochSleep(EpochSleep),
         ValidateGenesisTemplates(ValidateGenesisTemplates),
         SignGenesisTxs(SignGenesisTxs),
-        ByteGenesisTxs(SignGenesisTxs),
+        ByteGenesisTxs(ByteGenesisTxs),
         ParseMigrationJson(MigrationJson),
     }
 
@@ -2561,6 +2561,7 @@ pub mod cmds {
                 .subcommand(EpochSleep::def())
                 .subcommand(ValidateGenesisTemplates::def())
                 .subcommand(SignGenesisTxs::def())
+                .subcommand(ByteGenesisTxs::def())
                 .subcommand(MigrationJson::def())
                 .subcommand_required(true)
                 .arg_required_else_help(true)

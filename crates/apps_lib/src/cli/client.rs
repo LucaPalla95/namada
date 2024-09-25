@@ -857,7 +857,7 @@ impl CliApi {
                     ClientUtils::SignGenesisTxs(SignGenesisTxs(args)) => {
                         utils::sign_genesis_tx(global_args, args).await
                     }
-                    ClientUtils::ByteGenesisTxs(SignGenesisTxs(args)) => {
+                    ClientUtils::ByteGenesisTxs(ByteGenesisTxs(args)) => {
                         let unsigned = utils::byte_genesis_tx(global_args, args).await;
                         println!("{:?}", unsigned);
                     }
