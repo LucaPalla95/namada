@@ -2492,6 +2492,7 @@ pub mod cmds {
         EpochSleep(EpochSleep),
         ValidateGenesisTemplates(ValidateGenesisTemplates),
         SignGenesisTxs(SignGenesisTxs),
+        ByteGenesisTxs(SignGenesisTxs),
         ParseMigrationJson(MigrationJson),
     }
 
@@ -2759,6 +2760,25 @@ pub mod cmds {
 
     impl SubCmd for SignGenesisTxs {
         const CMD: &'static str = "sign-genesis-txs";
+
+        fn parse(matches: &ArgMatches) -> Option<Self> {
+            matches
+                .subcommand_matches(Self::CMD)
+                .map(|matches| Self(args::SignGenesisTxs::parse(matches)))
+        }
+
+        fn def() -> App {
+            App::new(Self::CMD)
+                .about(wrap!("Sign genesis transaction(s)."))
+                .add_args::<args::SignGenesisTxs>()
+        }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct ByteGenesisTxs(pub args::SignGenesisTxs);
+
+    impl SubCmd for ByteGenesisTxs {
+        const CMD: &'static str = "byte-genesis-txs";
 
         fn parse(matches: &ArgMatches) -> Option<Self> {
             matches

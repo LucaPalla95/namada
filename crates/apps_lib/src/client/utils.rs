@@ -1034,6 +1034,28 @@ pub async fn sign_genesis_tx(
     }
 }
 
+pub async fn byte_genesis_tx(
+    global_args: args::Global,
+    args::SignGenesisTxs {
+        path,
+        output,
+        validator_alias,
+        use_device,
+        device_transport,
+    }: args::SignGenesisTxs,
+) -> UnsignedTransactions {
+    let contents = fs::read(&path).unwrap_or_else(|err| {
+        eprintln!(
+            "Unable to read from file {}. Failed with {err}.",
+            path.to_string_lossy()
+        );
+        safe_exit(1)
+    });
+    // Sign a subset of the input txs (the ones whose keys we own)
+    let unsigned = genesis::transactions::parse_unsigned(&contents).unwrap();
+    return unsigned
+}
+
 /// Offline sign a transactions.
 pub async fn sign_offline(
     args::SignOffline {
