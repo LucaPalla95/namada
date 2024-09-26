@@ -3568,7 +3568,7 @@ pub mod args {
         arg_multi("signing-keys");
     pub const SIGNATURES: ArgMulti<PathBuf, GlobStar> = arg_multi("signatures");
     pub const SOURCE: Arg<WalletAddress> = arg("source");
-    pub const SOURCE_ADDR: Arg<Address> = arg("source");
+    pub const SOURCE_STR: Arg<String> = arg("source");
     pub const SOURCE_OPT: ArgOpt<WalletAddress> = SOURCE.opt();
     pub const SOURCE_VALIDATOR: Arg<WalletAddress> = arg("source-validator");
     pub const SPENDING_KEY_SOURCE: Arg<WalletSpendingKey> = arg("source");
@@ -3595,7 +3595,7 @@ pub mod args {
     pub const UNSAFE_SHOW_SECRET: ArgFlag = flag("unsafe-show-secret");
     pub const USE_DEVICE: ArgFlag = flag("use-device");
     pub const VALIDATOR: Arg<WalletAddress> = arg("validator");
-    pub const VALIDATOR_ADDR: Arg<Address> = arg("validator");
+    pub const VALIDATOR_STR: Arg<String> = arg("validator");
     pub const VALIDATOR_OPT: ArgOpt<WalletAddress> = VALIDATOR.opt();
     pub const VALIDATOR_NAME_OPT: ArgOpt<String> = arg_opt("name");
     pub const VALIDATOR_ACCOUNT_KEY: ArgOpt<WalletPublicKey> =
@@ -8690,15 +8690,15 @@ pub mod args {
 
     #[derive(Clone, Debug)]
     pub struct ByteGenesisTxs {
-        pub source: Address, //PubKey
-        pub validator: Address,
+        pub source: String, //PubKey
+        pub validator: String,
         pub amount: String,
     }
 
     impl Args for ByteGenesisTxs {
         fn parse(matches: &ArgMatches) -> Self {
-            let source = SOURCE_ADDR.parse(matches);
-            let validator = VALIDATOR_ADDR.parse(matches);
+            let source = SOURCE_STR.parse(matches);
+            let validator = VALIDATOR_STR.parse(matches);
             let amount = AMOUNT_STR.parse(matches);
             Self {
                 source,

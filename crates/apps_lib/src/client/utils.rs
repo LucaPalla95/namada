@@ -1037,8 +1037,8 @@ pub async fn sign_genesis_tx(
 
 #[derive(Serialize)]
 struct Bond {
-    source: Address,
-    validator: Address,
+    source: String,
+    validator: String,
     amount: String,
 }
 
