@@ -1043,7 +1043,7 @@ pub async fn byte_genesis_tx(
         use_device,
         device_transport,
     }: args::SignGenesisTxs,
-) -> UnsignedTransactions {
+) -> Vec<u8> {
     let contents = fs::read(&path).unwrap_or_else(|err| {
         eprintln!(
             "Unable to read from file {}. Failed with {err}.",
@@ -1051,9 +1051,7 @@ pub async fn byte_genesis_tx(
         );
         safe_exit(1)
     });
-    // Sign a subset of the input txs (the ones whose keys we own)
-    let unsigned = genesis::transactions::parse_unsigned(&contents).unwrap();
-    return unsigned
+    return contents
 }
 
 /// Offline sign a transactions.
