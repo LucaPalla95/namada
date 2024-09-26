@@ -4805,6 +4805,7 @@ dependencies = [
  "tracing-appender",
  "tracing-log",
  "tracing-subscriber",
+ "wasm-bindgen",
  "zeroize",
 ]
 

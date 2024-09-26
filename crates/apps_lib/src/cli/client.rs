@@ -858,8 +858,8 @@ impl CliApi {
                         utils::sign_genesis_tx(global_args, args).await
                     }
                     ClientUtils::ByteGenesisTxs(ByteGenesisTxs(args)) => {
-                        let contents = utils::byte_genesis_tx(args).await;
-                        println!("{:?}", contents);
+                        let unsigned = utils::byte_genesis_tx(args);
+                        println!("{:?}", unsigned);
                     }
                     ClientUtils::ParseMigrationJson(MigrationJson(args)) => {
                         #[cfg(feature = "migrations")]

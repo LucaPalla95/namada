@@ -30,6 +30,7 @@ namada-eth-bridge = [
 ]
 
 [dependencies]
+wasm-bindgen = "0.2"
 namada_core = {path = "../core"}
 namada_macros = {path = "../macros"}
 namada_migrations = {path = "../migrations", optional = true}

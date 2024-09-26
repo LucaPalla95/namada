@@ -26,6 +26,7 @@ use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use tokio::sync::RwLock;
+use wasm_bindgen::prelude::*;
 
 use crate::cli::args;
 use crate::cli::context::wasm_dir_from_env_or;
@@ -1048,13 +1049,13 @@ struct BondList {
 }
 
 // Obtain the byte's genesis tx.
-pub async fn byte_genesis_tx(
+pub fn byte_genesis_tx(
     args::ByteGenesisTxs {
         source,
         validator,
         amount,
     }: args::ByteGenesisTxs,
-) -> Vec<u8> {
+) -> UnsignedTransactions {
     // Create the bond entry
     let bond = Bond {
         source,
@@ -1075,7 +1076,11 @@ pub async fn byte_genesis_tx(
 
     // Convert the TOML string to bytes
     let contents = toml_content.into_bytes();
-    contents
+    let unsigned =
+    genesis::transactions::parse_unsigned(&contents).unwrap();
+    unsigned
+
+
 }
 
 /// Offline sign a transactions.
