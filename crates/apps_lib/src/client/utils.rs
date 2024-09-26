@@ -22,12 +22,13 @@ use namada_sdk::uint::Uint;
 use namada_sdk::wallet::{alias, LoadStoreError, Wallet};
 use namada_vm::validate_untrusted_wasm;
 use prost::bytes::Bytes;
+use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use tokio::sync::RwLock;
 
 use crate::cli::args;
-use crate::cli::context::wasm_dir_from_env_or;
+use crate::cli::context::{wasm_dir_from_env_or, WalletAddress};
 use crate::config::genesis::chain::DeriveEstablishedAddress;
 use crate::config::genesis::transactions::{
     sign_delegation_bond_tx, sign_validator_account_tx, UnsignedTransactions,
@@ -1034,24 +1035,47 @@ pub async fn sign_genesis_tx(
     }
 }
 
+#[derive(Serialize)]
+struct Bond {
+    source: Address,
+    validator: Address,
+    amount: String,
+}
+
+#[derive(Serialize)]
+struct BondList {
+    bond: Vec<Bond>,
+}
+
+// Define your new function
 pub async fn byte_genesis_tx(
-    global_args: args::Global,
-    args::SignGenesisTxs {
-        path,
-        output,
-        validator_alias,
-        use_device,
-        device_transport,
-    }: args::SignGenesisTxs,
+    args::ByteGenesisTxs {
+        source,
+        validator,
+        amount,
+    }: args::ByteGenesisTxs,
 ) -> Vec<u8> {
-    let contents = fs::read(&path).unwrap_or_else(|err| {
-        eprintln!(
-            "Unable to read from file {}. Failed with {err}.",
-            path.to_string_lossy()
-        );
+    // Create the bond entry
+    let bond = Bond {
+        source,
+        validator,
+        amount,
+    };
+
+    // Create the bond list
+    let bond_list = BondList {
+        bond: vec![bond],
+    };
+
+    // Serialize the bond list to a TOML string
+    let toml_content = toml::to_string(&bond_list).unwrap_or_else(|err| {
+        eprintln!("Unable to serialize to TOML. Failed with {err}.");
         safe_exit(1)
     });
-    return contents
+
+    // Convert the TOML string to bytes
+    let contents = toml_content.into_bytes();
+    contents
 }
 
 /// Offline sign a transactions.

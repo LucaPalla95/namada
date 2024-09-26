@@ -2779,7 +2779,7 @@ pub mod cmds {
     }
 
     #[derive(Clone, Debug)]
-    pub struct ByteGenesisTxs(pub args::SignGenesisTxs);
+    pub struct ByteGenesisTxs(pub args::ByteGenesisTxs);
 
     impl SubCmd for ByteGenesisTxs {
         const CMD: &'static str = "byte-genesis-txs";
@@ -2787,7 +2787,7 @@ pub mod cmds {
         fn parse(matches: &ArgMatches) -> Option<Self> {
             matches
                 .subcommand_matches(Self::CMD)
-                .map(|matches| Self(args::SignGenesisTxs::parse(matches)))
+                .map(|matches| Self(args::ByteGenesisTxs::parse(matches)))
         }
 
         fn def() -> App {
@@ -3311,7 +3311,7 @@ pub mod args {
     use namada_sdk::masp::utils::RetryStrategy;
     use namada_sdk::storage::{self, BlockHeight, Epoch};
     use namada_sdk::time::DateTimeUtc;
-    use namada_sdk::token::NATIVE_MAX_DECIMAL_PLACES;
+    use namada_sdk::token::{DenominatedAmount, NATIVE_MAX_DECIMAL_PLACES};
     use namada_sdk::tx::data::GasLimit;
     pub use namada_sdk::tx::{
         TX_BECOME_VALIDATOR_WASM, TX_BOND_WASM, TX_BRIDGE_POOL_WASM,
@@ -3344,6 +3344,7 @@ pub mod args {
     pub const ALIAS_MANY: ArgMulti<String, GlobPlus> = arg_multi("aliases");
     pub const ALLOW_DUPLICATE_IP: ArgFlag = flag("allow-duplicate-ip");
     pub const AMOUNT: Arg<token::DenominatedAmount> = arg("amount");
+    pub const AMOUNT_STR: Arg<String> = arg("amount");
     pub const ARCHIVE_DIR: ArgOpt<PathBuf> = arg_opt("archive-dir");
     pub const AVATAR_OPT: ArgOpt<String> = arg_opt("avatar");
     pub const BALANCE_OWNER: Arg<WalletBalanceOwner> = arg("owner");
@@ -3567,6 +3568,7 @@ pub mod args {
         arg_multi("signing-keys");
     pub const SIGNATURES: ArgMulti<PathBuf, GlobStar> = arg_multi("signatures");
     pub const SOURCE: Arg<WalletAddress> = arg("source");
+    pub const SOURCE_ADDR: Arg<Address> = arg("source");
     pub const SOURCE_OPT: ArgOpt<WalletAddress> = SOURCE.opt();
     pub const SOURCE_VALIDATOR: Arg<WalletAddress> = arg("source-validator");
     pub const SPENDING_KEY_SOURCE: Arg<WalletSpendingKey> = arg("source");
@@ -3593,6 +3595,7 @@ pub mod args {
     pub const UNSAFE_SHOW_SECRET: ArgFlag = flag("unsafe-show-secret");
     pub const USE_DEVICE: ArgFlag = flag("use-device");
     pub const VALIDATOR: Arg<WalletAddress> = arg("validator");
+    pub const VALIDATOR_ADDR: Arg<Address> = arg("validator");
     pub const VALIDATOR_OPT: ArgOpt<WalletAddress> = VALIDATOR.opt();
     pub const VALIDATOR_NAME_OPT: ArgOpt<String> = arg_opt("name");
     pub const VALIDATOR_ACCOUNT_KEY: ArgOpt<WalletPublicKey> =
@@ -8682,6 +8685,42 @@ pub mod args {
                 "Select transport for hardware wallet from \"hid\" (default) \
                  or \"tcp\"."
             )))
+        }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct ByteGenesisTxs {
+        pub source: Address, //PubKey
+        pub validator: Address,
+        pub amount: String,
+    }
+
+    impl Args for ByteGenesisTxs {
+        fn parse(matches: &ArgMatches) -> Self {
+            let source = SOURCE_ADDR.parse(matches);
+            let validator = VALIDATOR_ADDR.parse(matches);
+            let amount = AMOUNT_STR.parse(matches);
+            Self {
+                source,
+                validator,
+                amount,
+            }
+        }
+
+        fn def(app: App) -> App {
+            app.arg(
+                SOURCE.def().help(wrap!(
+                    "Staker's public key."
+                )),
+            )
+            .arg(VALIDATOR.def().help(wrap!(
+                "Validator address."
+            )))
+            .arg(
+                AMOUNT
+                    .def()
+                    .help(wrap!("Amount and denomination of the token to stake")),
+            )
         }
     }
 
