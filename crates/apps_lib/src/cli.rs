@@ -2793,7 +2793,7 @@ pub mod cmds {
         fn def() -> App {
             App::new(Self::CMD)
                 .about(wrap!("Byte genesis transaction(s)."))
-                .add_args::<args::SignGenesisTxs>()
+                .add_args::<args::ByteGenesisTxs>()
         }
     }
 
