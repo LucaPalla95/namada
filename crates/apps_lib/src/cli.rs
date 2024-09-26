@@ -3311,7 +3311,7 @@ pub mod args {
     use namada_sdk::masp::utils::RetryStrategy;
     use namada_sdk::storage::{self, BlockHeight, Epoch};
     use namada_sdk::time::DateTimeUtc;
-    use namada_sdk::token::{DenominatedAmount, NATIVE_MAX_DECIMAL_PLACES};
+    use namada_sdk::token::NATIVE_MAX_DECIMAL_PLACES;
     use namada_sdk::tx::data::GasLimit;
     pub use namada_sdk::tx::{
         TX_BECOME_VALIDATOR_WASM, TX_BOND_WASM, TX_BRIDGE_POOL_WASM,

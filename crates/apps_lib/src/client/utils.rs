@@ -28,7 +28,7 @@ use sha2::{Digest, Sha256};
 use tokio::sync::RwLock;
 
 use crate::cli::args;
-use crate::cli::context::{wasm_dir_from_env_or, WalletAddress};
+use crate::cli::context::wasm_dir_from_env_or;
 use crate::config::genesis::chain::DeriveEstablishedAddress;
 use crate::config::genesis::transactions::{
     sign_delegation_bond_tx, sign_validator_account_tx, UnsignedTransactions,
@@ -1047,7 +1047,7 @@ struct BondList {
     bond: Vec<Bond>,
 }
 
-// Define your new function
+// Obtain the byte's genesis tx.
 pub async fn byte_genesis_tx(
     args::ByteGenesisTxs {
         source,
