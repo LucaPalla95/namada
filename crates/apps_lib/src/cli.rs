@@ -8693,6 +8693,9 @@ pub mod args {
         pub source: String, //PubKey
         pub validator: String,
         pub amount: String,
+        pub validator_alias: Option<String>,
+        pub use_device: bool,
+        pub device_transport: DeviceTransport,
     }
 
     impl Args for ByteGenesisTxs {
@@ -8700,10 +8703,16 @@ pub mod args {
             let source = SOURCE_STR.parse(matches);
             let validator = VALIDATOR_STR.parse(matches);
             let amount = AMOUNT_STR.parse(matches);
+            let validator_alias = ALIAS_OPT.parse(matches);
+            let use_device = USE_DEVICE.parse(matches);
+            let device_transport = DEVICE_TRANSPORT.parse(matches);
             Self {
                 source,
                 validator,
                 amount,
+                validator_alias,
+                use_device,
+                device_transport,
             }
         }
 
@@ -8720,7 +8729,19 @@ pub mod args {
                 AMOUNT
                     .def()
                     .help(wrap!("Amount and denomination of the token to stake")),
+            ).arg(
+                ALIAS_OPT
+                    .def()
+                    .help(wrap!("Optional alias to a validator wallet.")),
             )
+            .arg(USE_DEVICE.def().help(wrap!(
+                "Derive an address and public key from the seed stored on the \
+                 connected hardware wallet."
+            )))
+            .arg(DEVICE_TRANSPORT.def().help(wrap!(
+                "Select transport for hardware wallet from \"hid\" (default) \
+                 or \"tcp\"."
+            )))
         }
     }
 

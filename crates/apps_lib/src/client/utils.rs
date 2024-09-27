@@ -32,7 +32,7 @@ use crate::cli::args;
 use crate::cli::context::wasm_dir_from_env_or;
 use crate::config::genesis::chain::DeriveEstablishedAddress;
 use crate::config::genesis::transactions::{
-    sign_delegation_bond_tx, sign_validator_account_tx, UnsignedTransactions,
+    sign_delegation_bond_tx, sign_validator_account_tx, Transactions, UnsignedTransactions
 };
 use crate::config::genesis::{AddrOrPk, GenesisAddress};
 use crate::config::global::GlobalConfig;
@@ -1049,14 +1049,26 @@ struct BondList {
 }
 
 // Obtain the byte's genesis tx.
-pub fn byte_genesis_tx(
+pub async fn byte_genesis_tx(
+    global_args: args::Global,
     args::ByteGenesisTxs {
         source,
         validator,
         amount,
+        validator_alias,
+        use_device,
+        device_transport,
     }: args::ByteGenesisTxs,
-) -> UnsignedTransactions {
+) -> std::result::Result<Transactions<config::genesis::templates::Unvalidated>, Box<dyn std::error::Error>> {
     // Create the bond entry
+    let (wallet, _wallet_file) =
+    load_pre_genesis_wallet_or_exit(&global_args.base_dir);
+    let wallet_lock = RwLock::new(wallet);
+    let maybe_pre_genesis_wallet = validator_alias.and_then(|alias| {
+    let pre_genesis_dir =
+        validator_pre_genesis_dir(&global_args.base_dir, &alias);
+    pre_genesis::load(&pre_genesis_dir).ok()
+    });
     let bond = Bond {
         source,
         validator,
@@ -1076,11 +1088,21 @@ pub fn byte_genesis_tx(
 
     // Convert the TOML string to bytes
     let contents = toml_content.into_bytes();
-    let unsigned =
-    genesis::transactions::parse_unsigned(&contents).unwrap();
-    unsigned
-
-
+    if let Ok(unsigned) = genesis::transactions::parse_unsigned(&contents) {
+        let signed = genesis::transactions::sign_txs(
+            unsigned,
+            &wallet_lock,
+            maybe_pre_genesis_wallet.as_ref(),
+            use_device,
+            device_transport,
+        )
+        .await;
+        
+        // Step 3: Return the signed transactions
+        Ok(signed)
+    } else {
+        Err("Failed to parse unsigned transactions".into()) // Return an error if parsing fails
+    }
 }
 
 /// Offline sign a transactions.
