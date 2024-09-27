@@ -8639,8 +8639,9 @@ pub mod args {
 
     #[derive(Clone, Debug)]
     pub struct SignGenesisTxs {
-        pub path: PathBuf,
-        pub output: Option<PathBuf>,
+        pub source: String,
+        pub validator: String,
+        pub amount: String,
         pub validator_alias: Option<String>,
         pub use_device: bool,
         pub device_transport: DeviceTransport,
@@ -8648,14 +8649,16 @@ pub mod args {
 
     impl Args for SignGenesisTxs {
         fn parse(matches: &ArgMatches) -> Self {
-            let path = PATH.parse(matches);
-            let output = OUTPUT.parse(matches);
+            let source = SOURCE_STR.parse(matches);
+            let validator = VALIDATOR_STR.parse(matches);
+            let amount = AMOUNT_STR.parse(matches);
             let validator_alias = ALIAS_OPT.parse(matches);
             let use_device = USE_DEVICE.parse(matches);
             let device_transport = DEVICE_TRANSPORT.parse(matches);
             Self {
-                path,
-                output,
+                source,
+                validator,
+                amount,
                 validator_alias,
                 use_device,
                 device_transport,
@@ -8664,13 +8667,17 @@ pub mod args {
 
         fn def(app: App) -> App {
             app.arg(
-                PATH.def().help(wrap!(
+                SOURCE_STR.def().help(wrap!(
                     "Path to the unsigned transactions TOML file."
                 )),
             )
-            .arg(OUTPUT.def().help(wrap!(
+            .arg(VALIDATOR_STR.def().help(wrap!(
                 "Save the output to a TOML file. When not supplied, the \
                  signed transactions will be printed to stdout instead."
+            )))
+            .arg(AMOUNT_STR.def().help(wrap!(
+                "The amount of native token to transfer to the validator. \
+                 This is a required parameter."
             )))
             .arg(
                 ALIAS_OPT

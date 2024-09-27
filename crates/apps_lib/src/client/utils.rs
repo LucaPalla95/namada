@@ -956,8 +956,9 @@ async fn append_signature_to_signed_toml(
 pub async fn sign_genesis_tx(
     global_args: args::Global,
     args::SignGenesisTxs {
-        path,
-        output,
+        source,
+        validator,
+        amount,
         validator_alias,
         use_device,
         device_transport,
@@ -971,69 +972,38 @@ pub async fn sign_genesis_tx(
             validator_pre_genesis_dir(&global_args.base_dir, &alias);
         pre_genesis::load(&pre_genesis_dir).ok()
     });
-    let contents = fs::read(&path).unwrap_or_else(|err| {
-        eprintln!(
-            "Unable to read from file {}. Failed with {err}.",
-            path.to_string_lossy()
-        );
+    let bond = Bond {
+        source,
+        validator,
+        amount,
+    };
+
+    // Create the bond list
+    let bond_list = BondList {
+        bond: vec![bond],
+    };
+
+    // Serialize the bond list to a TOML string
+    let toml_content = toml::to_string(&bond_list).unwrap_or_else(|err| {
+        eprintln!("Unable to serialize to TOML. Failed with {err}.");
         safe_exit(1)
     });
+    let contents = toml_content.into_bytes();
     // Sign a subset of the input txs (the ones whose keys we own)
-    let signed = if let Ok(unsigned) =
-        genesis::transactions::parse_unsigned(&contents)
-    {
-        let signed = genesis::transactions::sign_txs(
-            unsigned,
-            &wallet_lock,
-            maybe_pre_genesis_wallet.as_ref(),
-            use_device,
-            device_transport,
-        )
-        .await;
-        if let Some(output_path) = output.as_ref() {
-            // If the output path contains existing signed txs, we append
-            // the newly signed txs to the file
-            #[allow(clippy::disallowed_methods)]
-            let mut prev_txs =
-                genesis::templates::read_transactions(output_path)
-                    .unwrap_or_default();
-            prev_txs.merge(signed);
-            prev_txs
-        } else {
-            signed
-        }
-    } else {
-        // In case we fail to parse unsigned txs, we will attempt to
-        // parse signed txs and append new signatures to the existing
-        // toml file
-        append_signature_to_signed_toml(
-            &path,
-            &wallet_lock,
-            use_device,
-            device_transport,
-        )
-        .await
-    };
-    match output {
-        Some(output_path) => {
-            let transactions = toml::to_vec(&signed).unwrap();
-            fs::write(&output_path, transactions).unwrap_or_else(|err| {
-                eprintln!(
-                    "Failed to write output to {} with {err}.",
-                    output_path.to_string_lossy()
-                );
-                safe_exit(1);
-            });
-            println!(
-                "Your public signed transactions TOML has been written to {}",
-                output_path.to_string_lossy()
-            );
-        }
-        None => {
-            let transactions = toml::to_string(&signed).unwrap();
-            println!("{transactions}");
-        }
-    }
+    let unsigned = 
+        genesis::transactions::parse_unsigned(&contents).unwrap();
+
+    let signed = genesis::transactions::sign_txs(
+        unsigned,
+        &wallet_lock,
+        maybe_pre_genesis_wallet.as_ref(),
+        use_device,
+        device_transport,
+    )
+    .await;
+
+    let transactions = toml::to_string(&signed).unwrap();
+    println!("{transactions}");
 }
 
 #[derive(Serialize)]
